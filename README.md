@@ -132,6 +132,34 @@ App behavior:
 - The app also exposes the trained ML model's prediction and probabilities in an expandable section for reference.
 
 
+## Evaluation Outputs
+
+After running `python evaluate.py`, the evaluation artifacts are written to the `outputs/` directory. These files are displayed by the Streamlit app under the **Model Performance** expander.
+
+- `outputs/metrics.json` — JSON file containing core metrics produced by the evaluation script. Typical keys:
+
+```json
+{
+  "accuracy": 0.99,
+  "f1_macro": 0.88,
+  "f1_weighted": 0.99
+}
+```
+
+- `outputs/conf_matrix.png` — Confusion matrix image (saved as a PNG). Example:
+
+![Confusion Matrix](outputs/conf_matrix.png)
+
+- `outputs/feature_importances.csv` — CSV with two columns: `feature` and `importance`. The Streamlit app reads this file and renders a bar chart and table of the top features.
+
+Regenerate evaluation outputs by running:
+
+```powershell
+python evaluate.py
+```
+
+If you don't see those files after running the script, check logs for errors; the evaluation script will create the `outputs/` directory and save artifacts when possible.
+
 ## Technologies used
 
 - Python 3.x

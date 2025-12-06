@@ -214,6 +214,47 @@ def load_model():
     return None
 
 
+def load_model_performance(output_dir: str = "outputs"):
+    """Load model evaluation artifacts: metrics.json, conf_matrix.png, feature_importances.csv.
+
+    Returns a dict with keys: metrics (or None), conf_matrix_path (or None), feature_importances_df (or None)
+    """
+    out = {"metrics": None, "conf_matrix_path": None, "feature_importances": None}
+    metrics_path = os.path.join(output_dir, "metrics.json")
+    conf_matrix_path = os.path.join(output_dir, "conf_matrix.png")
+    fi_path = os.path.join(output_dir, "feature_importances.csv")
+
+    # metrics
+    try:
+        if os.path.exists(metrics_path):
+            with open(metrics_path, "r", encoding="utf-8") as f:
+                out["metrics"] = json.load(f)
+    except Exception:
+        out["metrics"] = None
+
+    # confusion matrix image
+    if os.path.exists(conf_matrix_path):
+        out["conf_matrix_path"] = conf_matrix_path
+
+    # feature importances
+    try:
+        if os.path.exists(fi_path):
+            df_fi = pd.read_csv(fi_path)
+            # expect columns like 'feature' and 'importance' or similar
+            if "feature" in df_fi.columns and "importance" in df_fi.columns:
+                out["feature_importances"] = df_fi
+            else:
+                # try to handle alternate column names
+                if df_fi.shape[1] >= 2:
+                    df_fi = df_fi.iloc[:, :2]
+                    df_fi.columns = ["feature", "importance"]
+                    out["feature_importances"] = df_fi
+    except Exception:
+        out["feature_importances"] = None
+
+    return out
+
+
 def predict(model, features_df: pd.DataFrame):
     # model expects numeric feature order used during training; pass DataFrame
     preds = model.predict(features_df)
@@ -310,29 +351,68 @@ def main():
 
         st.caption("Thresholds: high > 20 commits/month, medium 5–20 commits/month, low < 5 commits/month")
 
-        # Model prediction for reference (optional)
-        with st.expander("Model prediction (for reference)"):
-            if model is None:
-                st.write("No trained model found for reference.")
+        # (Model prediction expander removed by user request)
+
+        # Model Performance (informational only)
+        perf = load_model_performance(output_dir="outputs")
+        with st.expander("🔍 Model Performance"):
+            st.subheader("Model evaluation summary")
+            metrics = perf.get("metrics")
+            if metrics is None:
+                st.warning("Model evaluation files not found in `outputs/`. Skipping performance display.")
             else:
-                try:
-                    if hasattr(model, "predict_proba"):
-                        probs = model.predict_proba(features)[0]
-                        classes = list(model.classes_)
-                        top_idx = int(probs.argmax())
-                        st.write(f"Model label: **{classes[top_idx]}** (prob {probs[top_idx]:.2f})")
-                        # show full class probabilities
-                        probs_df = (
-                            pd.DataFrame({"class": classes, "prob": probs})
-                            .sort_values("prob", ascending=False)
-                            .reset_index(drop=True)
-                        )
-                        st.table(probs_df)
+                # Display core metrics with explanations
+                acc = metrics.get("accuracy")
+                macro_f1 = metrics.get("f1_macro") or metrics.get("macro_f1") or metrics.get("f1_macro_score")
+                weighted_f1 = metrics.get("f1_weighted") or metrics.get("weighted_f1") or metrics.get("f1_weighted_score")
+
+                cols = st.columns(3)
+                with cols[0]:
+                    if acc is not None:
+                        st.metric("Accuracy", f"{float(acc):.2f}")
                     else:
-                        model_label = model.predict(features)[0]
-                        st.write(f"Model label: **{model_label}** (no probability available)")
-                except Exception as e:
-                    st.write(f"Model prediction failed: {e}")
+                        st.write("Accuracy: N/A")
+                with cols[1]:
+                    if macro_f1 is not None:
+                        st.metric("Macro F1", f"{float(macro_f1):.2f}")
+                    else:
+                        st.write("Macro F1: N/A")
+                with cols[2]:
+                    if weighted_f1 is not None:
+                        st.metric("Weighted F1", f"{float(weighted_f1):.2f}")
+                    else:
+                        st.write("Weighted F1: N/A")
+
+                st.markdown("**Explanation:** Accuracy represents the fraction of correctly predicted labels. Macro F1 averages F1 across classes equally; Weighted F1 weights by class support.")
+
+                # Confusion matrix image
+                cm_path = perf.get("conf_matrix_path")
+                if cm_path:
+                    try:
+                        st.subheader("Confusion Matrix")
+                        st.image(cm_path, use_column_width=True)
+                    except Exception as e:
+                        st.warning(f"Failed to load confusion matrix image: {e}")
+                else:
+                    st.info("No confusion matrix image found at `outputs/conf_matrix.png`.")
+
+                # Feature importances
+                fi_df = perf.get("feature_importances")
+                if fi_df is not None and not fi_df.empty:
+                    try:
+                        st.subheader("Feature Importances")
+                        # ensure proper types
+                        fi_df = fi_df.copy()
+                        fi_df["importance"] = fi_df["importance"].astype(float)
+                        fi_df = fi_df.sort_values("importance", ascending=False).reset_index(drop=True)
+                        # show a bar chart
+                        st.bar_chart(fi_df.set_index("feature")["importance"])
+                        # show top table
+                        st.table(fi_df.head(10).assign(importance=lambda d: d["importance"].map(lambda x: f"{x:.2f}")))
+                    except Exception as e:
+                        st.warning(f"Failed to display feature importances: {e}")
+                else:
+                    st.info("No feature importances file found at `outputs/feature_importances.csv`.")
 
         # Show key metrics in a friendly two-column layout
         commits = int(features.iloc[0].get("commits_count", 0) or 0)
