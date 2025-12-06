@@ -1,0 +1,10 @@
+pandas
+scikit-learn
+joblib
+fastapi
+uvicorn
+pytest
+black
+flake8
+matplotlib
+seaborn
