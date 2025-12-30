@@ -383,18 +383,14 @@ def main():
                     else:
                         st.write("Weighted F1: N/A")
 
-                st.markdown("**Explanation:** Accuracy represents the fraction of correctly predicted labels. Macro F1 averages F1 across classes equally; Weighted F1 weights by class support.")
+                st.markdown("**Explanation:** Accuracy is the percentage of correct predictions. F1 Score combines precision and recall into a single metric (0-1, higher is better).")
 
-                # Confusion matrix image
-                cm_path = perf.get("conf_matrix_path")
-                if cm_path:
-                    try:
-                        st.subheader("Confusion Matrix")
-                        st.image(cm_path, use_column_width=True)
-                    except Exception as e:
-                        st.warning(f"Failed to load confusion matrix image: {e}")
-                else:
-                    st.info("No confusion matrix image found at `outputs/conf_matrix.png`.")
+                # Simple progress bar showing model accuracy
+                if acc is not None:
+                    acc_float = float(acc)
+                    st.subheader("📈 Model Accuracy")
+                    st.progress(min(acc_float, 1.0))
+                    st.write(f"**{acc_float*100:.1f}%** of predictions are correct")
 
                 # Feature importances
                 fi_df = perf.get("feature_importances")
@@ -414,43 +410,17 @@ def main():
                 else:
                     st.info("No feature importances file found at `outputs/feature_importances.csv`.")
 
-        # Show key metrics in a friendly two-column layout
+        # Show key metrics - simplified
         commits = int(features.iloc[0].get("commits_count", 0) or 0)
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            st.subheader("Key metrics")
-            metrics = {
-                "Stars": int(repo_json.get("stargazers_count", 0) or 0),
-                "Forks": int(repo_json.get("forks_count", 0) or 0),
-                "Commits": commits,
-                "Open Issues": int(repo_json.get("open_issues_count", 0) or 0),
-                "Repo Age (days)": int(features.iloc[0]["repo_age_days"]),
-            }
-            # show large metrics with emojis
-            kcol1, kcol2, kcol3 = st.columns(3)
-            kcol1.metric("⭐ Stars", f"{metrics['Stars']:,}")
-            kcol2.metric("🍴 Forks", f"{metrics['Forks']:,}")
-            kcol3.metric("� commits", f"{metrics['Commits']:,}")
-            st.table(pd.DataFrame(metrics, index=[0]).T.rename(columns={0: "value"}))
-
-        with col2:
-            st.subheader("Comparison to average")
-        try:
-            df_all = pd.read_csv("data/repositories.csv")
-            avg_stars = df_all["Stars"].astype(float).mean()
-            avg_forks = df_all["Forks"].astype(float).mean()
-            comp = pd.DataFrame({
-                "metric": ["Stars", "Forks", "Commits"],
-                "repo": [metrics["Stars"], metrics["Forks"], metrics["Commits"]],
-                "average": [avg_stars, avg_forks, df_all.get("commits_count", pd.Series([0])).astype(float).mean()],
-            })
-            st.bar_chart(comp.set_index("metric")[ ["repo", "average"] ])
-        except Exception:
-            # optional; ignore if dataset not present or malformed
-            pass
-
-        # Short explanation for Stars and Forks
-        st.markdown("**About this plot**: 'Stars' are how many GitHub users starred (bookmarked) the repo. 'Forks' are copies of the repo made by others to contribute or experiment. Higher stars usually indicate popularity; forks indicate contributions or reuse.")
+        st.subheader("📊 Repository Statistics")
+        
+        # Display key metrics in large, easy-to-read format
+        col1, col2, col3, col4, col5 = st.columns(5)
+        col1.metric("⭐ Stars", f"{int(repo_json.get('stargazers_count', 0) or 0):,}")
+        col2.metric("🍴 Forks", f"{int(repo_json.get('forks_count', 0) or 0):,}")
+        col3.metric("📝 Commits", f"{commits:,}")
+        col4.metric("⚠️ Issues", f"{int(repo_json.get('open_issues_count', 0) or 0):,}")
+        col5.metric("📅 Age (days)", f"{int(features.iloc[0]['repo_age_days'])}")
 
         # Friendly feedback (positive reasons or actionable suggestions)
         header, items = generate_feedback(repo_json, features, meta, pred)

@@ -71,21 +71,6 @@ def evaluate_model(model_path, dataset_split="test"):
     except Exception:
         logger.exception("Failed to write metrics.json")
 
-    # Save confusion matrix image
-    try:
-        plt.figure(figsize=(6, 5))
-        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
-        plt.title("Confusion Matrix")
-        plt.xlabel("Predicted")
-        plt.ylabel("Actual")
-        cm_path = os.path.join(outdir, "conf_matrix.png")
-        plt.tight_layout()
-        plt.savefig(cm_path)
-        plt.close()
-        logger.info("Saved confusion matrix to %s", cm_path)
-    except Exception:
-        logger.exception("Failed to save confusion matrix image")
-
     # Save feature importances if available
     try:
         if hasattr(model, "feature_importances_"):
