@@ -102,22 +102,6 @@ Outputs:
 
 The script logs metrics and will raise helpful errors if required columns are missing.
 
-## How to run EDA
-
-The repository includes a simple EDA script `eda.py` that generates exploratory plots and saves them to `outputs/`.
-
-Run:
-
-```powershell
-python eda.py
-```
-
-Generated files (examples):
-- `outputs/plot1.png` — scatter / relationship plot
-- `outputs/plot2.png` — distribution / histogram
-
-Add or modify the EDA script to explore additional features or produce publication-ready figures.
-
 ## How to launch the Streamlit app
 
 Start the app with Streamlit. Make sure your virtual environment is activated.
@@ -133,49 +117,33 @@ App behavior:
 
 ## Deployment
 
-This app is deployed on **Vercel** (free tier) at:
+This app is deployed on **Vercel** (free tier):
 
 ```
-https://github-productivity-[your-username].vercel.app
+https://github-productivity-[comes later after deployment].vercel.app
 ```
 
-**Deployment is Git-based**: Simply push to the main branch on GitHub, and Vercel automatically builds and deploys the latest version. The `vercel.json` file contains the build configuration.
+**Git-based deploys**: Push to `main` and Vercel auto-builds using `vercel.json`.
 
-To deploy your own version:
-1. Push the repository to GitHub
-2. Sign in to [Vercel](https://vercel.com) with your GitHub account
-3. Click "New Project" and import this repository
-4. Vercel auto-detects the configuration and deploys automatically
+Quick steps:
+1) Connect the GitHub repo in Vercel (New Project)
+2) Deploy once; Vercel detects config automatically
+3) Every push to `main` redeploys the app
 
-No Docker, no CI/CD configuration needed—Vercel handles it.
+No Docker or custom CI needed.
 
 ## Evaluation Outputs
 
-After running `python evaluate.py`, the evaluation artifacts are written to the `outputs/` directory. These files are displayed by the Streamlit app under the **Model Performance** expander.
-
-- `outputs/metrics.json` — JSON file containing core metrics produced by the evaluation script. Typical keys:
-
-```json
-{
-  "accuracy": 0.99,
-  "f1_macro": 0.88,
-  "f1_weighted": 0.99
-}
-```
-
-- `outputs/conf_matrix.png` — Confusion matrix image (saved as a PNG). Example:
-
-![Confusion Matrix](outputs/conf_matrix.png)
-
-- `outputs/feature_importances.csv` — CSV with two columns: `feature` and `importance`. The Streamlit app reads this file and renders a bar chart and table of the top features.
-
-Regenerate evaluation outputs by running:
+Run:
 
 ```powershell
 python evaluate.py
 ```
 
-If you don't see those files after running the script, check logs for errors; the evaluation script will create the `outputs/` directory and save artifacts when possible.
+Outputs (written to `outputs/`):
+- `metrics.json` with `accuracy`, `f1_macro`, `f1_weighted`
+
+These metrics appear in the Streamlit app (accuracy shown as a progress bar). If the file is missing, rerun the command and check the console logs.
 
 ## Technologies used
 
