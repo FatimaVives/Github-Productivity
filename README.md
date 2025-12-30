@@ -131,6 +131,23 @@ App behavior:
 - The app fetches public repo metadata from the GitHub API, estimates commits (if needed), computes commits/month, and shows a productivity badge (High / Medium / Low) plus supporting metrics.
 - The app also exposes the trained ML model's prediction and probabilities in an expandable section for reference.
 
+## Deployment
+
+This app is deployed on **Vercel** (free tier) at:
+
+```
+https://github-productivity-[your-username].vercel.app
+```
+
+**Deployment is Git-based**: Simply push to the main branch on GitHub, and Vercel automatically builds and deploys the latest version. The `vercel.json` file contains the build configuration.
+
+To deploy your own version:
+1. Push the repository to GitHub
+2. Sign in to [Vercel](https://vercel.com) with your GitHub account
+3. Click "New Project" and import this repository
+4. Vercel auto-detects the configuration and deploys automatically
+
+No Docker, no CI/CD configuration needed—Vercel handles it.
 
 ## Evaluation Outputs
 
