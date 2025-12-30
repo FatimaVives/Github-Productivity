@@ -1,8 +1,7 @@
 pandas
 scikit-learn
 joblib
-fastapi
-uvicorn
+streamlit>=1.28.0
 pytest
 black
 flake8
