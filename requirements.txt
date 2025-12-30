@@ -2,8 +2,3 @@ pandas
 scikit-learn
 joblib
 streamlit>=1.28.0
-pytest
-black
-flake8
-matplotlib
-seaborn
