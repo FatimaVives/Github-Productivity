@@ -12,28 +12,26 @@ A small toolkit and demo app that analyzes GitHub repositories and predicts thei
 - Robust CSV loader and feature engineering pipeline (`data.py`).
 - Two simple ML pipelines (baseline logistic regression and a random forest) saved under `models/`.
 - Training and evaluation utilities (`train.py`, `evaluate.py`).
-- Lightweight exploratory analysis script that saves plots to `outputs/` (`eda.py`).
-- Streamlit app (`app.py`) that accepts a GitHub repo URL, fetches public metadata, estimates commit activity, and shows a clear, interpretable productivity badge plus model reference predictions.
+- Streamlit app (`app.py`) that accepts a GitHub repo URL, fetches public metadata, estimates commit activity, and shows a productivity badge (High/Medium/Low) with supporting metrics.
 
 ## Project Structure
 
 Top-level files and their roles:
 
-- `config.py` : Configuration constants and default paths used across scripts.
-- `data.py` : Data loading, cleaning, feature engineering, and train/validation/test splitting.
-- `models.py` : Scikit-learn pipeline definitions for baseline and random-forest models.
-- `train.py` : Script to prepare data, train pipelines, evaluate, and save model artifacts to `models/`.
-- `evaluate.py` : Helper utilities to evaluate and report model metrics.
-- `predict.py` : Small helper for running predictions against saved model artifacts.
-- `serve.py` : Minimal API server (if included) for exposing model predictions programmatically.
-- `eda.py` : Exploratory Data Analysis script that generates and saves plots to `outputs/`.
-- `app.py` : Streamlit application that fetches GitHub repository data, computes commits/month, displays a productivity badge, and exposes the trained model's reference prediction.
-- `tune.py` : hyperparameter tuning utilities if present.
-- `requirements.txt` : Python dependency list for creating a reproducible environment.
-- `data/` : Directory containing input CSVs (e.g. `repositories.csv`).
-- `models/` : Directory where trained model artifacts are written (e.g. `baseline.joblib`, `rf.joblib`).
-- `outputs/` : Generated outputs like EDA plots: `outputs/plot1.png`, `outputs/plot2.png`.
-- `tests/` : Unit tests for data logic (e.g. `tests/test_data.py`).
+- `app.py` : Streamlit web application (entry point). Accepts GitHub URLs, fetches repo data, analyzes productivity.
+- `train.py` : Script to train ML pipelines from `data/repositories.csv`.
+- `evaluate.py` : Script to evaluate trained models and save metrics to `outputs/metrics.json`.
+- `data.py` : Data loading, cleaning, and feature engineering utilities.
+- `models.py` : Scikit-learn pipeline definitions (baseline logistic regression, random forest).
+- `predict.py` : Prediction utilities for trained models.
+- `config.py` : Configuration constants and paths.
+- `utils.py` : Logging and utility functions.
+- `requirements.txt` : Python dependencies (streamlit, scikit-learn, pandas, joblib).
+- `vercel.json` : Vercel deployment config (optional; app deployed on Streamlit Cloud).
+- `models/` : Pre-trained model artifacts (`baseline.joblib`, `rf.joblib`).
+- `outputs/` : Generated evaluation metrics (`metrics.json`).
+- `data/` : Input datasets (note: `repositories.csv` excluded from deployment).
+- `tests/` : Unit tests for data validation.
 
 Basic workflow diagram:
 
@@ -117,20 +115,21 @@ App behavior:
 
 ## Deployment
 
-This app is deployed on **Vercel** (free tier):
+This app is deployed on **Streamlit Cloud** (free tier):
 
 ```
-https://github-productivity-[comes later after deployment].vercel.app
+https://app-appuctivity-rt5uaqf59jpkvzme2gsn86.streamlit.app/
 ```
 
-**Git-based deploys**: Push to `main` and Vercel auto-builds using `vercel.json`.
+**Git-based deploys**: Push to `main` on GitHub and Streamlit Cloud auto-redeploys.
 
 Quick steps:
-1) Connect the GitHub repo in Vercel (New Project)
-2) Deploy once; Vercel detects config automatically
-3) Every push to `main` redeploys the app
+1) Go to https://streamlit.io/cloud
+2) Click "New app" and connect your GitHub repo
+3) Select main branch and `app.py` as entry point
+4) Deploy
 
-No Docker or custom CI needed.
+Every push to `main` triggers automatic redeployment. No Docker, no configuration files needed (Streamlit Cloud detects `requirements.txt` automatically).
 
 ## Evaluation Outputs
 
@@ -147,10 +146,8 @@ These metrics appear in the Streamlit app (accuracy shown as a progress bar). If
 
 ## Technologies used
 
-- Python 3.x
-- pandas for data processing
-- scikit-learn for modeling
-- joblib for model persistence
-- Streamlit for the web UI
-- matplotlib / seaborn for plotting (EDA)
-- pytest for basic unit tests
+- **Python 3.x**
+- **Streamlit** — web UI framework
+- **scikit-learn** — machine learning models
+- **pandas** — data processing
+- **joblib** — model serialization
