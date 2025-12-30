@@ -118,7 +118,7 @@ App behavior:
 This app is deployed on **Streamlit Cloud** (free tier):
 
 ```
-https://app-appuctivity-rt5uaqf59jpkvzme2gsn86.streamlit.app/
+https://pr0ductivity-predictor.streamlit.app/
 ```
 
 **Git-based deploys**: Push to `main` on GitHub and Streamlit Cloud auto-redeploys.
